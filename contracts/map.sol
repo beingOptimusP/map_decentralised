@@ -1,6 +1,11 @@
 pragma solidity >=0.4.22 <0.7.0;
 
-contract Map_token{
+// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MAP {
+    
+    //ERC20
+    
     // Public variables of the token
     string public name;
     string public symbol;
@@ -27,14 +32,17 @@ contract Map_token{
      * Initializes contract with initial supply tokens to the creator of the contract
      */
     constructor(
+        string memory tokenName,
+        string memory tokenSymbol,
         uint256 initialSupply,
-        uint8 _decimals
+        uint8 _decimals,
     ) public {
         decimals = _decimals;
         totalSupply = initialSupply * 10 ** uint256(decimals);  // Update total supply with the decimal amount
         balanceOf[msg.sender] = totalSupply;                // Give the creator all initial tokens
-        name = "MAP_token";                                   // Set the name for display purposes
-        symbol = "MAP";                               // Set the symbol for display purposes
+        name = tokenName;                                   // Set the name for display purposes
+        symbol = tokenSymbol;                               // Set the symbol for display purposes
+        timeStamp = now;
     }
 
     /**
@@ -101,4 +109,51 @@ contract Map_token{
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
+    
+    //BANK and ERC721
+
+    mapping (address => uint256) public balanceBank;
+    mapping (uint => address) public token;
+    mapping (address => uint) public tokenNo;
+    mapping (uint => TokenData) public data;
+    // mapping (uint => uint[]) ;
+    
+    uint private cmap;
+    uint private tokenInBank;
+    uint private inflation;
+    uint timeStamp;
+    uint[] private tokens; 
+    struct TokenData{
+        uint tokenId;
+        uint time;
+        uint holdings;
+        uint interest;
+    }
+
+    function deposit(uint _value) public{
+        require(_value <= balanceOf(msg.sender),"no enough funds in ur wallet");
+        balanceBank[msg.sender] += _value; 
+        balanceOf[msg.sender] -= _value;
+        tokenInBank += _value;
+        inflation = (totalSuppy - tokenInBank)*100*(now - timeStamp)/(totalSupply*31536000);
+        token[cmap] = msg.sender;
+        data[cmap].tokenId = cmap;
+        data[cmap].time = now;
+        data[cmap].holdings = _value;
+        data[cmap].interest = inflation;
+        cmap++;
+        tokenNo[msg.sender]++;
+    }
+
+    function withdraw(uint _tokenId) public{
+        require(token[_tokenId] == msg.sender,"this token dont belongs to you");
+        balanceBank[msg.sender] -= _value; 
+        balanceOf[msg.sender] += _value;
+
+
+
+        token[_tokenId] = address(0x0);
+        tokenNo[msg.sender]--;
+    }
+    
 }

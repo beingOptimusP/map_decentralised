@@ -136,6 +136,7 @@ contract MAP {
         balanceOf[msg.sender] -= _value;
         tokenInBank += _value;
         inflation = (totalSuppy - tokenInBank)*100*(now - timeStamp)/(totalSupply*31536000);
+        timeStamp = now;
         token[cmap] = msg.sender;
         data[cmap].tokenId = cmap;
         data[cmap].time = now;
@@ -149,9 +150,11 @@ contract MAP {
         require(token[_tokenId] == msg.sender,"this token dont belongs to you");
         balanceBank[msg.sender] -= _value; 
         balanceOf[msg.sender] += _value;
-
-
-
+        tokenInBank -= token[_tokenId].holdings;
+        uint interestAmount = balanceBank[msg.sender]*token[_tokenId].interest/100;
+        balanceOf[msg.sender] += (token[_tokenId].holdings+interestAmount);
+        balanceBank[msg.sender] -= token[_tokenId].holdings;
+        
         token[_tokenId] = address(0x0);
         tokenNo[msg.sender]--;
     }

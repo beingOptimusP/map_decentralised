@@ -31,17 +31,12 @@ contract MAP {
      *
      * Initializes contract with initial supply tokens to the creator of the contract
      */
-    constructor(
-        string memory tokenName,
-        string memory tokenSymbol,
-        uint256 initialSupply,
-        uint8 _decimals,
-    ) public {
-        decimals = _decimals;
-        totalSupply = initialSupply * 10 ** uint256(decimals);  // Update total supply with the decimal amount
+    constructor() public {
+        decimals = 18;
+        totalSupply = 1000000 * 10 ** uint256(decimals);  // Update total supply with the decimal amount
         balanceOf[msg.sender] = totalSupply;                // Give the creator all initial tokens
-        name = tokenName;                                   // Set the name for display purposes
-        symbol = tokenSymbol;                               // Set the symbol for display purposes
+        name = "MAP";                                   // Set the name for display purposes
+        symbol = "MAP";                               // Set the symbol for display purposes
         timeStamp = now;
     }
 
@@ -131,11 +126,11 @@ contract MAP {
     }
 
     function deposit(uint _value) public{
-        require(_value <= balanceOf(msg.sender),"no enough funds in ur wallet");
+        require(_value <= balanceOf[msg.sender],"no enough funds in ur wallet");
         balanceBank[msg.sender] += _value; 
         balanceOf[msg.sender] -= _value;
         tokenInBank += _value;
-        inflation = (totalSuppy - tokenInBank)*100*(now - timeStamp)/(totalSupply*31536000);
+        inflation = ((totalSupply - tokenInBank)*100*(now - timeStamp))/( totalSupply*31536000 );
         timeStamp = now;
         token[cmap] = msg.sender;
         data[cmap].tokenId = cmap;
@@ -148,12 +143,12 @@ contract MAP {
 
     function withdraw(uint _tokenId) public{
         require(token[_tokenId] == msg.sender,"this token dont belongs to you");
-        balanceBank[msg.sender] -= _value; 
-        balanceOf[msg.sender] += _value;
-        tokenInBank -= token[_tokenId].holdings;
-        uint interestAmount = balanceBank[msg.sender]*token[_tokenId].interest/100;
-        balanceOf[msg.sender] += (token[_tokenId].holdings+interestAmount);
-        balanceBank[msg.sender] -= token[_tokenId].holdings;
+        balanceBank[msg.sender] -= data[_tokenId].holdings; 
+        balanceOf[msg.sender] += data[_tokenId].holdings;
+        tokenInBank -= data[_tokenId].holdings;
+        uint interestAmount = balanceBank[msg.sender]*data[_tokenId].interest/100;
+        balanceOf[msg.sender] += (data[_tokenId].holdings+interestAmount);
+        balanceBank[msg.sender] -= data[_tokenId].holdings;
         
         token[_tokenId] = address(0x0);
         tokenNo[msg.sender]--;

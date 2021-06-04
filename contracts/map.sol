@@ -2,8 +2,6 @@
 
 pragma solidity >=0.4.22 <0.7.0;
 
-// import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
-
 contract MAP {
     //ERC20
 
@@ -142,7 +140,7 @@ contract MAP {
     uint256 private tokenInBank;
 
     //inflation percentage
-    uint256 private inflation;
+    uint256 public inflation;
 
     //token data
     struct TokenData {
@@ -158,6 +156,8 @@ contract MAP {
             "no enough funds in ur wallet"
         );
 
+        require(_value != 0,"we dont accept 0 deposit");
+
         //subs tokens from user wallet
         balanceOf[msg.sender] -= _value;
 
@@ -166,6 +166,9 @@ contract MAP {
 
         //adds tokens to total bank holdings
         tokenInBank += _value;
+
+        //storing interest rate at that moment
+        data[cmap].interest = inflation;
 
         //finds interest %
         inflation =
@@ -181,9 +184,6 @@ contract MAP {
         //storing time of the deposit
         data[cmap].time = now;
 
-        //storing interest rate at that moment
-        data[cmap].interest = inflation;
-
         //incrementing tokenid
         cmap++;
 
@@ -192,30 +192,72 @@ contract MAP {
     }
 
     function withdraw(uint256 _tokenId) public {
-        require(
+        uint diff = now - data[_tokenId].time;
+
+        if(diff < 1036800)
+        {
+            require(
+            token[_tokenId] == msg.sender,
+            "this token dont belongs to you"
+            );
+
+            //updating total tokens in bank
+            tokenInBank -= data[_tokenId].holdings;
+
+            //calculating interest amount;
+            uint256 interestAmount =
+                ((data[_tokenId].holdings * data[_tokenId].interest) *
+                    (diff)) / (100 * 31536000 * 1000000);
+
+            //transfering tokens to users wallet
+            balanceOf[msg.sender] += (data[_tokenId].holdings + interestAmount);
+
+            //totalSupply Update
+            totalSupply += interestAmount;
+
+            //buring cmap token
+            token[_tokenId] = address(0x0);
+
+            //updating number of cmap tokens held by the user
+            tokenNo[msg.sender]--;
+        }
+        else if(diff > 1036800 && diff < 10368000)
+        {
+            require(
             token[_tokenId] == msg.sender,
             "this token dont belongs to you"
         );
 
-        //updating total tokens in bank
-        tokenInBank -= data[_tokenId].holdings;
+            //updating total tokens in bank
+            tokenInBank -= data[_tokenId].holdings;
 
-        //calculating interest amount;
-        uint256 interestAmount =
-            ((data[_tokenId].holdings * data[_tokenId].interest) *
-                (now - data[_tokenId].time)) / (100 * 31536000 * 1000000);
+            //calculating interest amount;
+            uint256 interestAmount =
+                ((data[_tokenId].holdings * data[_tokenId].interest) *
+                    (1036800)) / (100 * 31536000 * 1000000);
 
-        //transfering tokens to users wallet
-        balanceOf[msg.sender] += (data[_tokenId].holdings + interestAmount);
+            //transfering tokens to users wallet
+            balanceOf[msg.sender] += (data[_tokenId].holdings + interestAmount);
 
-        //totalSupply Update
-        totalSupply += interestAmount;
+            //totalSupply Update
+            totalSupply += interestAmount;
 
-        //buring cmap token
-        token[_tokenId] = address(0x0);
+            //burning cmap token
+            token[_tokenId] = address(0x0);
 
-        //updating number of cmap tokens held by the user
-        tokenNo[msg.sender]--;
+            //updating number of cmap tokens held by the user
+            tokenNo[msg.sender]--;
+        }
+        else{
+            //updating total tokens in bank
+            tokenInBank -= data[_tokenId].holdings;
+
+            //transfering tokens to users wallet
+            balanceOf[msg.sender] += data[_tokenId].holdings/2;  
+
+            //updating tokens held by user
+            tokenNo[token[_tokenId]]--;          
+        }
     }
 
     function transferCmap(address _id, uint256 _tokenId) public {

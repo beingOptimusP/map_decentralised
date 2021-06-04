@@ -1,6 +1,7 @@
 //SPDX-License-Identifier: MIT;
 
-pragma solidity >=0.4.22 <0.7.0;
+pragma solidity >=0.4.22 <0.8.0;
+
 
 contract MAP {
     //ERC20
@@ -164,16 +165,16 @@ contract MAP {
         //adds tokens to cmap holdings
         data[cmap].holdings = _value;
 
-        //adds tokens to total bank holdings
-        tokenInBank += _value;
-
-        //storing interest rate at that moment
-        data[cmap].interest = inflation;
-
         //finds interest %
         inflation =
             ((totalSupply - tokenInBank) * 100 * 1000000) /
             (totalSupply);
+            
+         //storing interest rate at that moment
+        data[cmap].interest = inflation;
+            
+        //adds tokens to total bank holdings
+        tokenInBank += _value;
 
         //maps cmap token to the user who deposited tokens
         token[cmap] = msg.sender;

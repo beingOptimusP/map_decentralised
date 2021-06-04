@@ -145,7 +145,6 @@ contract MAP {
 
     //token data
     struct TokenData {
-        uint256 tokenId;
         uint256 time;
         uint256 holdings;
         uint256 interest;
@@ -217,7 +216,10 @@ contract MAP {
             totalSupply += interestAmount;
 
             //buring cmap token
-            token[_tokenId] = address(0x0);
+            delete token[_tokenId];
+
+            //burning token data
+            delete data[_tokenId];
 
             //updating number of cmap tokens held by the user
             tokenNo[msg.sender]--;
@@ -243,8 +245,11 @@ contract MAP {
             //totalSupply Update
             totalSupply += interestAmount;
 
-            //burning cmap token
-            token[_tokenId] = address(0x0);
+            //buring cmap token
+            delete token[_tokenId];
+
+             //burning token data
+            delete data[_tokenId];
 
             //updating number of cmap tokens held by the user
             tokenNo[msg.sender]--;

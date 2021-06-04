@@ -178,9 +178,6 @@ contract MAP {
         //maps cmap token to the user who deposited tokens
         token[cmap] = msg.sender;
 
-        //stores tokenId
-        data[cmap].tokenId = cmap;
-
         //storing time of the deposit
         data[cmap].time = now;
 

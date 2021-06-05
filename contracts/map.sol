@@ -141,8 +141,7 @@ contract MAP {
     uint256 private tokenInBank;
 
     //inflation percentage
-    uint256 public inflation = ((totalSupply - tokenInBank) * 100 * 1000000) /
-            (totalSupply);
+    uint256 public inflation = 100000000;
 
     //token data
     struct TokenData {

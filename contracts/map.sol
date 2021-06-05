@@ -141,7 +141,8 @@ contract MAP {
     uint256 private tokenInBank;
 
     //inflation percentage
-    uint256 public inflation;
+    uint256 public inflation = ((totalSupply - tokenInBank) * 100 * 1000000) /
+            (totalSupply);;
 
     //token data
     struct TokenData {
@@ -163,17 +164,17 @@ contract MAP {
 
         //adds tokens to cmap holdings
         data[cmap].holdings = _value;
-
-        //finds interest %
-        inflation =
-            ((totalSupply - tokenInBank) * 100 * 1000000) /
-            (totalSupply);
             
          //storing interest rate at that moment
         data[cmap].interest = inflation;
             
         //adds tokens to total bank holdings
         tokenInBank += _value;
+        
+        //finds interest %
+        inflation =
+            ((totalSupply - tokenInBank) * 100 * 1000000) /
+            (totalSupply);
 
         //maps cmap token to the user who deposited tokens
         token[cmap] = msg.sender;
@@ -211,6 +212,11 @@ contract MAP {
 
             //totalSupply Update
             totalSupply += interestAmount;
+            
+            //finds interest %
+            inflation =
+                ((totalSupply - tokenInBank) * 100 * 1000000) /
+                (totalSupply);
 
             //buring cmap token
             delete token[_tokenId];
@@ -241,6 +247,11 @@ contract MAP {
 
             //totalSupply Update
             totalSupply += interestAmount;
+            
+             //finds interest %
+            inflation =
+                ((totalSupply - tokenInBank) * 100 * 1000000) /
+                (totalSupply);
 
             //buring cmap token
             delete token[_tokenId];

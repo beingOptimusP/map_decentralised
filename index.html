@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
+    <script src="./contract.js"></script>
+</head>
+<body>
+    <center>
+        <h3>NAME => <span id="name"></span></h3>
+        <h3>Total supply => <span id="ts"></span></h3>
+        <h3>Your address => <span id="ad"></span></h3>
+        <h3>Inflation => <span id="infla"></span></h3>
+        <h3>My wallet balance => <span id="myBal"></span></h3>
+        <h3>transact => <center>address:<input type="text" id="add"> <br> value:<input type="number" id="value"> <br><button onclick="send()">send</button></center></h3>
+        <h3>deposit => <center>value:<input type="number" id="dep"> <br><button onclick="deposit()">send</button></center></h3>
+        <h3>withdraw => <center>value:<input type="number" id="wit"> <br><button onclick="withdraw()">send</button></center></h3>
+        <h3>token owner => <input type="number" id="token"> <button onclick="find()">find</button></h3>
+        <h3>owner => <span id="acc"></span></h3>
+    </center>
+
+    <script>
+
+        Number.prototype.noExponents= function(){
+            var data= String(this).split(/[eE]/);
+            if(data.length== 1) return data[0]; 
+
+            var  z= '', sign= this<0? '-':'',
+            str= data[0].replace('.', ''),
+            mag= Number(data[1])+ 1;
+
+            if(mag<0){
+                z= sign + '0.';
+                while(mag++) z += '0';
+                return z + str.replace(/^\-/,'');
+            }
+            mag -= str.length;  
+            while(mag--) z += '0';
+            return str + z;
+        }
+
+        var myContract;
+        async function CheckMetamaskConnection() {
+            // Modern dapp browsers...
+            if (window.ethereum) {
+                window.web3 = new Web3(window.ethereum);
+                try {
+                    // Request account access if needed
+                    await ethereum.enable();
+                    console.log('yes')
+                    init();
+                    // Acccounts now exposed
+                    return true;
+                } catch (error) {
+                    // User denied account access...
+                    return false;
+                }
+            }
+            // Legacy dapp browsers...
+            else if (window.web3) {
+                window.web3 = new Web3(web3.currentProvider);
+                // Acccounts always exposed
+                console.log('yes')
+                init();
+                return true;
+            }
+            // Non-dapp browsers...
+            else {
+                console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
+                return false;
+            }
+        }
+        CheckMetamaskConnection() 
+        myContract = new web3.eth.Contract(contractAbi,"0x2107FEC4Bc6846600c0d3d1479EC4E4476eF47Da");
+        var accounts;
+        const init = async () =>{
+            accounts = await web3.eth.getAccounts();
+            console.log(accounts)
+            var bal = parseFloat(await myContract.methods.totalSupply().call()/Math.pow(10,18));
+            var inflation = parseFloat(await myContract.methods.inflation().call()/Math.pow(10,6));
+            document.getElementById('ts').innerHTML = bal.noExponents();
+            document.getElementById('name').innerHTML = await myContract.methods.name().call();
+            document.getElementById('infla').innerHTML = `${inflation.noExponents()}%`;
+            document.getElementById('myBal').innerHTML = (await myContract.methods.balanceOf(accounts[0]).call()/Math.pow(10,18)).noExponents();
+            document.getElementById('ad').innerHTML = accounts[0];
+        }
+
+        const send = async () =>{
+            const value = String(document.getElementById('value').value*Math.pow(10,18));
+            console.log('sent')
+            const add = document.getElementById('add').value;
+            console.log(add)
+            await myContract.methods.transfer(add,value).send({from:accounts[0]});
+            window.location.reload(true);
+            init()
+
+        }
+
+        const deposit = async () =>{
+            const value = String(document.getElementById('dep').value*Math.pow(10,18));
+            await myContract.methods.deposit(value).send({from:accounts[0]});
+            window.location.reload(true);
+        }
+
+        const withdraw = async () =>{
+            const value = document.getElementById('wit').value;
+            await myContract.methods.withdraw(value).send({from:accounts[0]});
+            window.location.reload(true);
+        }
+
+        const find = async () =>{
+            const value = document.getElementById('token').value;
+            var acc = await myContract.methods.token(value).call();
+            document.getElementById('acc').innerHTML = acc;
+        }
+        
+    </script>
+</body>
+</html>

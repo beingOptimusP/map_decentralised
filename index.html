@@ -99,7 +99,7 @@
         }
 
         const deposit = async () =>{
-            const value = (document.getElementById('dep').value*Math.pow(10,18)).toString();
+            const value = (document.getElementById('dep').value*Math.pow(10,9)).toString();
             await myContract.methods.deposit(value).send({from:accounts[0]});
             window.location.reload(true);
         }

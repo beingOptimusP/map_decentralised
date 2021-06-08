@@ -81,17 +81,17 @@
         const init = async () =>{
             accounts = await web3.eth.getAccounts();
             console.log(accounts)
-            var bal = parseFloat(await myContract.methods.totalSupply().call()/Math.pow(10,18));
+            var Ts = parseFloat(await myContract.methods.totalSupply().call()/Math.pow(10,9));
             var inflation = parseFloat(await myContract.methods.inflation().call()/Math.pow(10,6));
-            document.getElementById('ts').innerHTML = bal.noExponents();
+            document.getElementById('ts').innerHTML = Ts.noExponents();
             document.getElementById('name').innerHTML = await myContract.methods.name().call();
             document.getElementById('infla').innerHTML = `${inflation.noExponents()}%`;
-            document.getElementById('myBal').innerHTML = (await myContract.methods.balanceOf(accounts[0]).call()/Math.pow(10,18)).noExponents();
+            document.getElementById('myBal').innerHTML = (await myContract.methods.balanceOf(accounts[0]).call()/Math.pow(10,9)).noExponents();
             document.getElementById('ad').innerHTML = accounts[0];
         }
 
         const send = async () =>{
-            const value = (document.getElementById('value').value*Math.pow(10,18)).toString();
+            const value = (document.getElementById('value').value*Math.pow(10,9)).toString();
             const add = document.getElementById('add').value;
             await myContract.methods.transfer(add,value).send({from:accounts[0]});
             window.location.reload(true);

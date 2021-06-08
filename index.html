@@ -1,121 +1,226 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-    
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-+0n0xVW2eSR5OomGNYDnhzAbDsOXxcvSN1TPprVMTNDbiYZCxYbOOl7+AMvyTG2x" crossorigin="anonymous">
+
     <script src="https://unpkg.com/web3@latest/dist/web3.min.js"></script>
     <script src="./contract.js"></script>
-</head>
-<body>
+  </head>
+  <body>
     <center>
-        <h3>NAME => <span id="name"></span></h3>
-        <h3>Total supply => <span id="ts"></span></h3>
-        <h3>Your address => <span id="ad"></span></h3>
-        <h3>Inflation => <span id="infla"></span></h3>
-        <h3>My wallet balance => <span id="myBal"></span></h3>
-        <h3>transact => <center>address:<input type="text" id="add"> <br> value:<input type="number" id="value"> <br><button onclick="send()">send</button></center></h3>
-        <h3>deposit => <center>value:<input type="number" id="dep"> <br><button onclick="deposit()">send</button></center></h3>
-        <h3>withdraw => <center>value:<input type="number" id="wit"> <br><button onclick="withdraw()">send</button></center></h3>
-        <h3>token owner => <input type="number" id="token"> <button onclick="find()">find</button></h3>
-        <h3>owner => <span id="acc"></span></h3>
+      <h6>NAME => <span id="name"></span></h6>
+      <h6>Total supply => <span id="ts"></span></h6>
+      <h6>Your address => <span id="ad"></span></h6>
+      <h6>Inflation => <span id="infla"></span></h6>
+      <h6>My wallet balance => <span id="myBal"></span></h6>
+      <h6>
+        transact =>
+        <center>
+          address:<input type="text" id="add" /> <br />
+          value:<input type="number" id="value" /> <br /><button
+            onclick="send()"
+          >
+            send
+          </button>
+        </center>
+      </h6>
+      <h6>
+        deposit =>
+        <center>
+          value:<input type="number" id="dep" /> <br /><button
+            onclick="deposit()"
+          >
+            send
+          </button>
+        </center>
+      </h6>
+      <h6>
+        withdraw =>
+        <center>
+          value:<input type="number" id="wit" /> <br /><button
+            onclick="withdraw()"
+          >
+            send
+          </button>
+        </center>
+      </h6>
+      <h6>
+        token owner => <input type="number" id="token" />
+        <button onclick="find()">find</button>
+      </h6>
+      <h6>owner => <span id="acc"></span></h6>
+      <br>
+      <h3>My nfts</h3>
+      <br>
+      <div class="coont" style="margin-left: 100px;margin-right:100px">
+        <table class="table table-striped table-dark" width="200" id="table">
+        <thead>
+          <tr>
+            <th scope="col">Token ID</th>
+            <th scope="col">Amount</th>
+            <th scope="col">Interest</th>
+            <th scope="col">TimeStamp</th>
+          </tr>
+        </thead>
+      </table>
+      </div>
     </center>
 
     <script>
-        
-        Number.prototype.noExponents= function(){
-            var data= String(this).split(/[eE]/);
-            if(data.length== 1) return data[0]; 
+      Number.prototype.noExponents = function () {
+        var data = String(this).split(/[eE]/);
+        if (data.length == 1) return data[0];
 
-            var  z= '', sign= this<0? '-':'',
-            str= data[0].replace('.', ''),
-            mag= Number(data[1])+ 1;
+        var z = "",
+          sign = this < 0 ? "-" : "",
+          str = data[0].replace(".", ""),
+          mag = Number(data[1]) + 1;
 
-            if(mag<0){
-                z= sign + '0.';
-                while(mag++) z += '0';
-                return z + str.replace(/^\-/,'');
-            }
-            mag -= str.length;  
-            while(mag--) z += '0';
-            return str + z;
+        if (mag < 0) {
+          z = sign + "0.";
+          while (mag++) z += "0";
+          return z + str.replace(/^\-/, "");
         }
+        mag -= str.length;
+        while (mag--) z += "0";
+        return str + z;
+      };
 
-        var myContract;
-        async function CheckMetamaskConnection() {
-            // Modern dapp browsers...
-            if (window.ethereum) {
-                window.web3 = new Web3(window.ethereum);
-                try {
-                    // Request account access if needed
-                    await ethereum.enable();
-                    console.log('yes')
-                    init();
-                    // Acccounts now exposed
-                    return true;
-                } catch (error) {
-                    // User denied account access...
-                    return false;
-                }
-            }
-            // Legacy dapp browsers...
-            else if (window.web3) {
-                window.web3 = new Web3(web3.currentProvider);
-                // Acccounts always exposed
-                console.log('yes')
-                init();
-                return true;
-            }
-            // Non-dapp browsers...
-            else {
-                console.log('Non-Ethereum browser detected. You should consider trying MetaMask!');
-                return false;
-            }
-        }
-        CheckMetamaskConnection() 
-        myContract = new web3.eth.Contract(contractAbi,"0xc43874f9123ff0cE9761398B5bF2084D79AAc83A");
-        var BN = web3.utils.BN;
-        var accounts;
-        const init = async () =>{
+      var myContract;
+      var accounts;
+      async function CheckMetamaskConnection() {
+        // Modern dapp browsers...
+        if (window.ethereum) {
+          window.web3 = new Web3(window.ethereum);
+          try {
+            // Request account access if needed
+            await ethereum.enable();
+            
             accounts = await web3.eth.getAccounts();
-            console.log(accounts)
-            var Ts = parseFloat(await myContract.methods.totalSupply().call()/Math.pow(10,9));
-            var inflation = parseFloat(await myContract.methods.inflation().call()/Math.pow(10,6));
-            document.getElementById('ts').innerHTML = Ts.noExponents();
-            document.getElementById('name').innerHTML = await myContract.methods.name().call();
-            document.getElementById('infla').innerHTML = `${inflation.noExponents()}%`;
-            document.getElementById('myBal').innerHTML = (await myContract.methods.balanceOf(accounts[0]).call()/Math.pow(10,9)).noExponents();
-            document.getElementById('ad').innerHTML = accounts[0];
+            console.log("yes");
+            init();
+            // Acccounts now exposed
+            return true;
+          } catch (error) {
+            // User denied account access...
+            return false;
+          }
         }
-
-        const send = async () =>{
-            const value = (document.getElementById('value').value*Math.pow(10,9)).toString();
-            const add = document.getElementById('add').value;
-            await myContract.methods.transfer(add,value).send({from:accounts[0]});
-            window.location.reload(true);
-
+        // Legacy dapp browsers...
+        else if (window.web3) {
+          window.web3 = new Web3(web3.currentProvider);
+          // Acccounts always exposed
+          accounts = await web3.eth.getAccounts();
+          console.log("yes");
+          init();
+          return true;
         }
-
-        const deposit = async () =>{
-            const value = (document.getElementById('dep').value*Math.pow(10,9)).toString();
-            await myContract.methods.deposit(value).send({from:accounts[0]});
-            window.location.reload(true);
+        // Non-dapp browsers...
+        else {
+          console.log(
+            "Non-Ethereum browser detected. You should consider trying MetaMask!"
+          );
+          return false;
         }
+      }
+      CheckMetamaskConnection();
+      myContract = new web3.eth.Contract(
+        contractAbi,
+        "0x10ed3884630dBb9BCA0163A9418FAff3D3a7c348"
+      );
+      var BN = web3.utils.BN;
+      
+      const init = async () => {
+        accounts = await web3.eth.getAccounts();
+        console.log(accounts);
+        var Ts = parseFloat(
+          (await myContract.methods.totalSupply().call()) / Math.pow(10, 9)
+        );
+        var inflation = parseFloat(
+          (await myContract.methods.inflation().call()) / Math.pow(10, 6)
+        );
+        document.getElementById("ts").innerHTML = Ts.noExponents();
+        document.getElementById("name").innerHTML = await myContract.methods
+          .name()
+          .call();
+        document.getElementById(
+          "infla"
+        ).innerHTML = `${inflation.noExponents()}%`;
+        document.getElementById("myBal").innerHTML = (
+          (await myContract.methods.balanceOf(accounts[0]).call()) /
+          Math.pow(10, 9)
+        ).noExponents();
+        document.getElementById("ad").innerHTML = accounts[0];
+      };
 
-        const withdraw = async () =>{
-            const value = document.getElementById('wit').value;
-            await myContract.methods.withdraw(value).send({from:accounts[0]});
-            window.location.reload(true);
-        }
+      const send = async () => {
+        const value = (
+          document.getElementById("value").value * Math.pow(10, 9)
+        ).toString();
+        const add = document.getElementById("add").value;
+        await myContract.methods
+          .transfer(add, value)
+          .send({ from: accounts[0] });
+        window.location.reload(true);
+      };
 
-        const find = async () =>{
-            const value = document.getElementById('token').value;
-            var acc = await myContract.methods.token(value).call();
-            document.getElementById('acc').innerHTML = acc;
+      const deposit = async () => {
+        const value = (
+          document.getElementById("dep").value * Math.pow(10, 9)
+        ).toString();
+        await myContract.methods.deposit(value).send({ from: accounts[0] });
+        window.location.reload(true);
+      };
+
+      const withdraw = async () => {
+        const value = document.getElementById("wit").value;
+        await myContract.methods.withdraw(value).send({ from: accounts[0] });
+        window.location.reload(true);
+      };
+
+      const find = async () => {
+        const value = document.getElementById("token").value;
+        var acc = await myContract.methods.token(value).call();
+        document.getElementById("acc").innerHTML = acc;
+      };
+
+      
+      myContract.getPastEvents(
+      "Deposit",
+      {
+        filter:{
+          _owner:"0xB2701b2968162f132E70e17537ceC2ac232f2094"
+        },
+        fromBlock:0,
+        toBlock:"latest",
+      },
+      async (err,events) =>{
+        var j=0;
+        for(let i=0;i<events.length;i++)
+        { 
+          const data = await myContract.methods.data(events[i].returnValues._tokenId).call();
+          if(data.time == 0)
+          {
+            continue;
+          }
+          else{
+            j++;
+          }
+          let table = document.getElementById("table");
+          let row = table.insertRow(j);
+          row.insertCell(0).innerHTML = events[i].returnValues._tokenId;
+          row.insertCell(1).innerHTML = data.holdings/Math.pow(10,9);
+          row.insertCell(2).innerHTML = `${data.interest/1000000}%`;
+          row.insertCell(3).innerHTML = data.time;
         }
-        
+      }
+    )
+      
     </script>
-</body>
+  </body>
 </html>

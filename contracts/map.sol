@@ -35,7 +35,7 @@ contract MAP {
      *
      * Initializes contract with initial supply tokens to the creator of the contract
      */
-    constructor() public {
+    constructor(){
         decimals = 18;
         totalSupply = 1000000 * 10**uint256(decimals); // Update total supply with the decimal amount
         balanceOf[msg.sender] = totalSupply; // Give the creator all initial tokens
@@ -179,7 +179,7 @@ contract MAP {
         token[cmap] = msg.sender;
 
         //storing time of the deposit
-        data[cmap].time = now;
+        data[cmap].time = block.timestamp;
 
         //incrementing tokenid
         cmap++;
@@ -189,7 +189,7 @@ contract MAP {
     }
 
     function withdraw(uint256 _tokenId) public {
-        uint diff = now - data[_tokenId].time;
+        uint diff = block.timestamp - data[_tokenId].time;
 
         if(diff < 1036800)
         {

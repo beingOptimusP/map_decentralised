@@ -1,7 +1,6 @@
 //SPDX-License-Identifier: MIT;
 
-pragma solidity >=0.4.22 <0.8.0;
-
+pragma solidity >=0.4.22 <0.8.4;
 
 contract MAP {
     //ERC20
@@ -16,7 +15,6 @@ contract MAP {
     // This creates an array with all balances
     mapping(address => uint256) public balanceOf;
     mapping(address => mapping(address => uint256)) public allowance;
-
     // This generates a public event on the blockchain that will notify clients
     event Transfer(address indexed from, address indexed to, uint256 value);
 
@@ -27,17 +25,24 @@ contract MAP {
         uint256 _value
     );
 
-    // This notifies clients about the amount burnt
-    event Burn(address indexed from, uint256 value);
+    // this notifies clients about their tokenIds
+    event Deposit(address indexed _owner, uint _tokenId, uint _inflation);
+
+    // this notifies clients about the token they burned
+    event Withdraw(address indexed _owner, uint _tokenId, uint _inflation);
+
+    // transfer cmaps
+    event Tcmap(address indexed from, address indexed to, uint _tokenId);
+
 
     /**
      * Constructor function
      *
      * Initializes contract with initial supply tokens to the creator of the contract
      */
-    constructor(){
-        decimals = 18;
-        totalSupply = 1000000 * 10**uint256(decimals); // Update total supply with the decimal amount
+    constructor() public {
+        decimals = 9;
+        totalSupply = 1000000000 * 10**uint256(decimals); // Update total supply with the decimal amount
         balanceOf[msg.sender] = totalSupply; // Give the creator all initial tokens
         name = "MAP"; // Set the name for display purposes
         symbol = "MAP";
@@ -138,7 +143,7 @@ contract MAP {
     uint256 private cmap;
 
     //total tokens deposited into bank
-    uint256 private tokenInBank;
+    uint256 public tokenInBank;
 
     //inflation percentage
     uint256 public inflation = 100000000;
@@ -156,20 +161,20 @@ contract MAP {
             "no enough funds in ur wallet"
         );
 
-        require(_value != 0,"we dont accept 0 deposit");
+        require(_value != 0, "we dont accept 0 deposit");
 
         //subs tokens from user wallet
         balanceOf[msg.sender] -= _value;
 
         //adds tokens to cmap holdings
         data[cmap].holdings = _value;
-            
-         //storing interest rate at that moment
+
+        //storing interest rate at that moment
         data[cmap].interest = inflation;
-            
+
         //adds tokens to total bank holdings
         tokenInBank += _value;
-        
+
         //finds interest %
         inflation =
             ((totalSupply - tokenInBank) * 100 * 1000000) /
@@ -186,16 +191,18 @@ contract MAP {
 
         //incrementing number of tokens held by the depositor
         tokenNo[msg.sender]++;
+
+        //emit deposit event
+        emit Deposit(msg.sender,cmap-1,inflation);
     }
 
     function withdraw(uint256 _tokenId) public {
-        uint diff = block.timestamp - data[_tokenId].time;
+        uint256 diff = block.timestamp - data[_tokenId].time;
 
-        if(diff < 1036800)
-        {
+        if (diff < 1036800) {
             require(
-            token[_tokenId] == msg.sender,
-            "this token dont belongs to you"
+                token[_tokenId] == msg.sender,
+                "this token dont belongs to you"
             );
 
             //updating total tokens in bank
@@ -203,15 +210,15 @@ contract MAP {
 
             //calculating interest amount;
             uint256 interestAmount =
-                ((data[_tokenId].holdings * data[_tokenId].interest) *
-                    (diff)) / (100 * 31536000 * 1000000);
+                ((data[_tokenId].holdings * data[_tokenId].interest) * (diff)) /
+                    (100 * 31536000 * 1000000);
 
             //transfering tokens to users wallet
             balanceOf[msg.sender] += (data[_tokenId].holdings + interestAmount);
 
             //totalSupply Update
             totalSupply += interestAmount;
-            
+
             //finds interest %
             inflation =
                 ((totalSupply - tokenInBank) * 100 * 1000000) /
@@ -225,13 +232,14 @@ contract MAP {
 
             //updating number of cmap tokens held by the user
             tokenNo[msg.sender]--;
-        }
-        else if(diff > 1036800 && diff < 10368000)
-        {
+
+            //emit withdraw event
+            emit Deposit(msg.sender,_tokenId,inflation);
+        } else if (diff > 1036800 && diff < 10368000) {
             require(
-            token[_tokenId] == msg.sender,
-            "this token dont belongs to you"
-        );
+                token[_tokenId] == msg.sender,
+                "this token dont belongs to you"
+            );
 
             //updating total tokens in bank
             tokenInBank -= data[_tokenId].holdings;
@@ -246,8 +254,8 @@ contract MAP {
 
             //totalSupply Update
             totalSupply += interestAmount;
-            
-             //finds interest %
+
+            //finds interest %
             inflation =
                 ((totalSupply - tokenInBank) * 100 * 1000000) /
                 (totalSupply);
@@ -255,21 +263,26 @@ contract MAP {
             //buring cmap token
             delete token[_tokenId];
 
-             //burning token data
+            //burning token data
             delete data[_tokenId];
 
             //updating number of cmap tokens held by the user
             tokenNo[msg.sender]--;
-        }
-        else{
+
+            //emit withdraw event
+            emit Deposit(msg.sender,_tokenId,inflation);
+        } else {
             //updating total tokens in bank
             tokenInBank -= data[_tokenId].holdings;
 
             //transfering tokens to users wallet
-            balanceOf[msg.sender] += data[_tokenId].holdings/2;  
+            balanceOf[msg.sender] += data[_tokenId].holdings / 2;
 
             //updating tokens held by user
-            tokenNo[token[_tokenId]]--;          
+            tokenNo[token[_tokenId]]--;
+
+            //emit withdraw event
+            emit Deposit(msg.sender,_tokenId,inflation);
         }
     }
 
@@ -282,5 +295,8 @@ contract MAP {
         //updating token number for both addresses
         tokenNo[msg.sender]--;
         tokenNo[_id]++;
+
+        //transfer cmap event
+        emit Tcmap(msg.sender,_id,_tokenId);
     }
 }

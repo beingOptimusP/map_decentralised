@@ -143,7 +143,7 @@
       CheckMetamaskConnection();
       myContract = new web3.eth.Contract(
         contractAbi,
-        "0x10ed3884630dBb9BCA0163A9418FAff3D3a7c348"
+        "0xF4F5cb500DfD1BFb7DF8afEcc8264603C1C4C3de"
       );
 
       //events call
@@ -186,7 +186,7 @@
           (await myContract.methods.totalSupply().call()) / Math.pow(10, 9)
         );
         var inflation = parseFloat(
-          (await myContract.methods.inflation().call()) / Math.pow(10, 8)
+          (await myContract.methods.inflation().call()) / Math.pow(10, 6)
         );
         document.getElementById("ts").innerHTML = Ts.noExponents();
         document.getElementById("name").innerHTML = await myContract.methods
@@ -234,12 +234,11 @@
       };
 
       const claim = async () =>{
-        var account = await web3.eth.getAccounts();
         myContract.getPastEvents(
           "Deposit",
           {
             filter: {
-              _owner: account[0],
+              _owner: accounts[0],
             },
             fromBlock: 0,
             toBlock: "latest",
@@ -257,7 +256,8 @@
                 arr.push(events[i].returnValues._tokenId)
             }
 
-            await myContract.methods.withdrawAll(arr).send({from:account[0]});
+            await myContract.methods.withdrawAll(arr).send({from:accounts[0]});
+            window.location.reload(true);
           }
         )
       }

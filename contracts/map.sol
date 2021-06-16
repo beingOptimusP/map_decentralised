@@ -281,6 +281,14 @@ contract MAP {
             //updating tokens held by user
             tokenNo[token[_tokenId]]--;
 
+            totalSupply -= data[_tokenId].holdings / 2;
+
+            //buring cmap token
+            delete token[_tokenId];
+
+            //burning token data
+            delete data[_tokenId];
+
             //emit withdraw event
             emit Deposit(msg.sender,_tokenId,inflation);
         }
@@ -298,5 +306,12 @@ contract MAP {
 
         //transfer cmap event
         emit Tcmap(msg.sender,_id,_tokenId);
+    }
+
+    function withdrawAll(uint[] memory _tokens) public{
+        for(uint i=0; i<_tokens.length; i++)
+        {
+            withdraw(_tokens[i]);
+        }
     }
 }

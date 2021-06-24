@@ -11,6 +11,9 @@ contract MAP {
     uint8 public decimals;
     // 18 decimals is the strongly suggested default, avoid changing it
     uint256 public totalSupply;
+    
+    //timestamp for daily velocity
+    uint public tstamp;
 
     // This creates an array with all balances
     mapping(address => uint256) public balanceOf;
@@ -46,6 +49,7 @@ contract MAP {
         balanceOf[msg.sender] = totalSupply; // Give the creator all initial tokens
         name = "MAP"; // Set the name for display purposes
         symbol = "MAP";
+        tstamp = now;
     }
 
     /**
@@ -85,6 +89,7 @@ contract MAP {
         public
         returns (bool success)
     {
+        velocity(_value);
         _transfer(msg.sender, _to, _value);
         return true;
     }
@@ -312,6 +317,25 @@ contract MAP {
         for(uint i=0; i<_tokens.length; i++)
         {
             withdraw(_tokens[i]);
+        }
+    }
+
+    uint num;
+    uint supply; //traded volume in one day
+    uint Velocity;
+    uint TSup;
+
+    function velocity(uint _value) public{
+        if(now - tstamp < 86400)
+        {
+            supply += _value;
+        }
+        else{
+            num++;
+            tstamp = now;
+            Velocity = ((TSup + supply)*1000000)/(num*totalSupply);
+            TSup += supply;
+            supply = 0;
         }
     }
 }

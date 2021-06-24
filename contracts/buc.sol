@@ -171,12 +171,13 @@ contract MAP {
     
     //function to find avg velocity
     function avgVelocity() public {
-        uint sup;
+        
+        uint Vsum;
         for(uint i=first; i<=last; i++)
         {
-            sup += queue[i];
+            Vsum += queue[i];
         }
-        avgVel = (sup/100);
+        avgVel = (Vsum/100);
     }
 
     function velocity(uint _value) public{
@@ -210,8 +211,10 @@ contract MAP {
                 totalSupply += ((((avgVel - 10 ** 18)*100)*totalSupply)/100);
             }
             else
+            if(avgVel < 10 ** 18)
             {
-                totalSupply -= ((((10 ** 18 - avgVel)*100)*totalSupply)/100);
+                if(totalSupply >= 10**9 * 10**18)
+                    totalSupply -= ((((10 ** 18 - avgVel)*100)*totalSupply)/100);
             }
         }
     }
@@ -220,7 +223,7 @@ contract MAP {
     function constInit() internal{
         for(uint i=0; i<100; i++)
         {
-            enqueue(1);
+            enqueue(10**18);
         }
     }
     

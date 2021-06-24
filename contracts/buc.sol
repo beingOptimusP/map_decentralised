@@ -208,13 +208,14 @@ contract MAP {
             //updating totalSupply
             if(avgVel > 10 ** 18)
             {
-                totalSupply += ((((avgVel - 10 ** 18)*100)*totalSupply)/100);
+                totalSupply += ((((avgVel - 10 ** 18)*100)*totalSupply)/10**20);
             }
             else
             if(avgVel < 10 ** 18)
             {
-                if(totalSupply >= 10**9 * 10**18)
-                    totalSupply -= ((((10 ** 18 - avgVel)*100)*totalSupply)/100);
+                uint uSupply = totalSupply + ((((10 ** 18 - avgVel)*100)*totalSupply)/10**20);
+                if(uSupply > 10**9 * 10**18)
+                    totalSupply = uSupply;
             }
         }
     }

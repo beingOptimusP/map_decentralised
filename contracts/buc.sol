@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.8.4;
 
-contract MAP {
+contract BUC {
     //ERC20
 
     // Public variables of the token
@@ -55,14 +55,16 @@ contract MAP {
         address _to,
         uint256 _value
     ) internal {
+        
+        uint256 _val;
         //converting value to share
-        _value = ((_value * 10**20)/totalSupply);
+        _val = ((_value * 10**20)/totalSupply);
         
         // Prevent transfer to 0x0 address. Use burn() instead
         require(_to != address(0x0));
         
         // Check if the sender has enough
-        require(balance[_from] >= _value);
+        require(balance[_from] >= _val);
         
         // Check for overflows
         require(balance[_to] + _value >= balance[_to]);
@@ -77,10 +79,10 @@ contract MAP {
         velocity(_value);
         
         // Subtract from the sender
-        balance[_from] -= _value;
+        balance[_from] -= _val;
         
         // Add the same to the recipient
-        balance[_to] += _value;
+        balance[_to] += _val;
         
         emit Transfer(_from, _to, _value);
         // Asserts are used to use static analysis to find bugs in your code. They should never fail
@@ -141,7 +143,7 @@ contract MAP {
     }
     
     //traded volume in one day
-    uint supply; 
+    uint public supply; 
     
     //velocity of one day
     uint Velocity;
@@ -213,7 +215,7 @@ contract MAP {
             else
             if(avgVel < 10 ** 18)
             {
-                uint uSupply = totalSupply + ((((10 ** 18 - avgVel)*100)*totalSupply)/10**20);
+                uint uSupply = totalSupply - ((((10 ** 18 - avgVel)*100)*totalSupply)/10**20);
                 if(uSupply > 10**9 * 10**18)
                     totalSupply = uSupply;
             }

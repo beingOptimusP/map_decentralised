@@ -38,7 +38,7 @@ contract BUC {
      * Initializes contract with initial supply tokens to the creator of the contract
      */
     constructor() public{ 
-        balance[msg.sender] = Tshare; // Give the creator all initial tokens
+        balance[msg.sender] = Tshare; // Give the creator all stakes
         tstamp = now;
         constInit();
     }
@@ -83,6 +83,13 @@ contract BUC {
         
         // Add the same to the recipient
         balance[_to] += _val;
+        
+        //cleaning accounts
+        if(balance[_from] < 100)
+        {
+            balance[_to] += balance[_from];
+            delete balance[_from];
+        }
         
         emit Transfer(_from, _to, _value);
         // Asserts are used to use static analysis to find bugs in your code. They should never fail
